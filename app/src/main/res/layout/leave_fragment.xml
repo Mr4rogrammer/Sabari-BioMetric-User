@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white"
+    android:padding="10dp"
+    android:orientation="vertical"
+    android:layout_height="match_parent">
+
+  <LinearLayout
+      android:layout_above="@id/button"
+      android:orientation="vertical"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+
+      <TextView
+          android:layout_marginStart="10dp"
+          android:textStyle="bold"
+          android:textColor="@color/black"
+          android:text="Pick Leave Type"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"/>
+
+      <Spinner
+          android:id="@+id/spinner"
+          android:layout_width="match_parent"
+          android:layout_height="50dp" />
+
+
+
+
+      <LinearLayout
+          android:orientation="horizontal"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content">
+
+          <com.google.android.material.textfield.TextInputLayout
+              android:layout_marginEnd="5dp"
+              android:layout_weight="1"
+              android:layout_width="0dp"
+              android:layout_height="wrap_content">
+
+              <com.google.android.material.textfield.TextInputEditText
+                  android:id="@+id/start_date"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:hint="Select Starting Date"
+                  android:inputType="none"
+                  android:focusable="false"
+                  />
+          </com.google.android.material.textfield.TextInputLayout>
+
+          <com.google.android.material.textfield.TextInputLayout
+              android:layout_marginStart="5dp"
+              android:layout_width="0dp"
+              android:layout_weight="1"
+              android:layout_height="wrap_content"
+              android:layout_centerInParent="true">
+
+              <com.google.android.material.textfield.TextInputEditText
+                  android:id="@+id/end_date"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:hint="Select Ending Date"
+                  android:inputType="none"
+                  android:focusable="false"
+                 />
+          </com.google.android.material.textfield.TextInputLayout>
+
+
+      </LinearLayout>
+
+
+
+      <LinearLayout
+          android:layout_marginTop="20dp"
+          android:orientation="horizontal"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content">
+
+          <com.google.android.material.textfield.TextInputLayout
+              android:layout_marginEnd="5dp"
+              android:layout_weight="1"
+              android:layout_width="0dp"
+              android:layout_height="wrap_content">
+
+              <com.google.android.material.textfield.TextInputEditText
+                  android:id="@+id/start_time"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:hint="Select Starting Time"
+                  android:inputType="none"
+                  android:focusable="false"
+                 />
+          </com.google.android.material.textfield.TextInputLayout>
+
+          <com.google.android.material.textfield.TextInputLayout
+              android:layout_marginStart="5dp"
+              android:layout_width="0dp"
+              android:layout_weight="1"
+              android:layout_height="wrap_content"
+              android:layout_centerInParent="true">
+
+              <com.google.android.material.textfield.TextInputEditText
+                  android:id="@+id/end_time"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:hint="Select Ending Time"
+                  android:inputType="none"
+                  android:focusable="false"
+                  />
+          </com.google.android.material.textfield.TextInputLayout>
+
+
+      </LinearLayout>
+
+      <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/leave"
+          android:layout_marginTop="20dp"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"/>
+
+  </LinearLayout>
+
+
+
+
+
+    <com.mrprogrammer.Utils.Widgets.ProgressButton
+        android:layout_alignParentBottom="true"
+        android:id="@+id/button"
+        app:text ="Apply"
+        app:radius="5dp"
+        app:backgroundColor = "@color/green"
+        app:textColor="@color/white"
+        android:layout_marginBottom="10dp"
+        android:layout_marginHorizontal="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+</RelativeLayout>
