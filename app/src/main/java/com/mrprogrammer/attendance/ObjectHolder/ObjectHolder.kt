@@ -8,7 +8,7 @@ import info.mrprogrammer.admin_bio.Model.AttdanceModel
 class ObjectHolder {
     private  var mrToast: MrToast? = null
     private  var imageUrl: String? = null
-    private var attdanceModel: MutableLiveData<AttdanceModel>? = null
+    private var attdanceModel: MutableLiveData<AttdanceModel> =  MutableLiveData()
     private  var attdanceSpModel: AttdanceModel? = null
 
     fun setImageUrl(image: String) {

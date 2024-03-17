@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
@@ -21,10 +22,12 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.mrprogrammer.Utils.CommonFunctions.CommonFunctions
 import com.mrprogrammer.Utils.CommonFunctions.LocalSharedPreferences
 import com.mrprogrammer.Utils.Widgets.ProgressButton
 import com.mrprogrammer.attendance.Adapter.LeaveListAdapter
 import com.mrprogrammer.attendance.R
+import com.mrprogrammer.attendance.Respositoy.CommonRepo
 import com.mrprogrammer.attendance.Utils
 import com.mrprogrammer.attendance.Utils.Companion.firebaseClearString
 import com.mrprogrammer.attendance.Utils.Companion.getCurrentDate
@@ -41,6 +44,8 @@ class Leave : Fragment() {
     private var listOfData = mutableListOf<LeaveDataMode>()
     var items = arrayOf("Leave", "On Duty","Permission")
     lateinit var root:View
+    var spinner: Spinner? = null
+    var selectedType:String = "Leave".toUpperCase()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         root =  inflater.inflate(R.layout.leave_fragment, container, false)
@@ -60,19 +65,35 @@ class Leave : Fragment() {
     }
 
     private fun getListOfUser() {
-        val db = FirebaseDatabase.getInstance().getReference("leave").child("krish@gmaicom")
+        val email = LocalSharedPreferences.getLocalSavedUser(requireContext())?.get(1)
+        val db = FirebaseDatabase.getInstance().getReference("leave").child(email?.firebaseClearString().toString())
         db.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                var leaveCount = 0
+                var odCount = 0
+                var permissionCount = 0
 
                 val email = LocalSharedPreferences.getLocalSavedUser(requireActivity())?.get(1)
                 listOfData.clear()
                 snapshot.children.forEach {
                     val data = it.getValue(LeaveDataMode::class.java)
                     data?.key = it.key.toString()
-                    if (data != null && data.email == email) {
+                    if (data != null && data.email == email)    {
                         listOfData.add(data)
                     }
+                    when(data?.type) {
+                        "LEAVE" -> leaveCount +=1
+                        "ON DUTY" -> odCount +=1
+                        "PERMISSION" -> permissionCount +=1
+                    }
                 }
+
+                val data: HashMap<String,String> = hashMapOf()
+                data["LEAVE"] = leaveCount.toString()
+                data["ON DUTY"] = odCount.toString()
+                data["PERMISSION"] = permissionCount.toString()
+
+                CommonRepo.updateLeave(data)
                 adapter.notifyDataSetChanged()
             }
 
@@ -121,20 +142,22 @@ class Leave : Fragment() {
             val input = EditText(context)
             builder.setView(input)
             builder.setPositiveButton("OK") { _, _ ->
+                val key = CommonFunctions.createUniqueKey().toString()
                 val enteredText = input.text.toString()
                 val roll =  Utils.retrieveData(requireContext(), "roll")
                 val email = LocalSharedPreferences.getLocalSavedUser(requireContext())?.get(1)
-                val db = FirebaseDatabase.getInstance().getReference("leave").child("krish@gmaicom")
+                var db = FirebaseDatabase.getInstance().getReference("leave")
                 val clearMail = email?.firebaseClearString().toString()
-                db.child(clearMail).child("adminremark").setValue("")
-                db.child(clearMail).child("email").setValue(email)
-                db.child(clearMail).child("enddate").setValue(end.text.toString())
-                db.child(clearMail).child("endtime").setValue(timeEnd.text.toString())
-                db.child(clearMail).child("fromdate").setValue(start.text.toString())
-                db.child(clearMail).child("fromtime").setValue(timeStart.text.toString())
-                db.child(clearMail).child("reason").setValue(enteredText)
-                db.child(clearMail).child("roll").setValue(roll)
-                db.child(clearMail).child("status").setValue(false).addOnCompleteListener {
+                db.child(clearMail).child(key).child("adminremark").setValue("")
+                db.child(clearMail).child(key).child("email").setValue(email)
+                db.child(clearMail).child(key).child("enddate").setValue(end.text.toString())
+                db.child(clearMail).child(key).child("endtime").setValue(timeEnd.text.toString())
+                db.child(clearMail).child(key).child("fromdate").setValue(start.text.toString())
+                db.child(clearMail).child(key).child("fromtime").setValue(timeStart.text.toString())
+                db.child(clearMail).child(key).child("reason").setValue(enteredText)
+                db.child(clearMail).child(key).child("roll").setValue(roll)
+                db.child(clearMail).child(key).child("type").setValue(selectedType)
+                db.child(clearMail).child(key).child("status").setValue(false).addOnCompleteListener {
                     ObjectHolder.getInstance()?.MrToast()?.success(requireActivity(),"Applied")
                 }
             }
@@ -179,7 +202,7 @@ class Leave : Fragment() {
 
         val timePickerDialog = TimePickerDialog(
             requireContext(),
-            TimePickerDialog.OnTimeSetListener { _, selectedHour, selectedMinute ->
+            { _, selectedHour, selectedMinute ->
                 val timeText = formatTime(selectedHour, selectedMinute)
 
                 textView.text = timeText
@@ -195,7 +218,18 @@ class Leave : Fragment() {
     private fun initSpinner() {
         val adapter: ArrayAdapter<String> = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, items)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        val spinner: Spinner = root.findViewById(R.id.spinner)
-        spinner.adapter = adapter
+        spinner = root.findViewById(R.id.spinner)
+        spinner?.adapter = adapter
+
+        spinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                val selectedItem = parent?.getItemAtPosition(position).toString()
+                selectedType = selectedItem.toUpperCase()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+        }
     }
 }

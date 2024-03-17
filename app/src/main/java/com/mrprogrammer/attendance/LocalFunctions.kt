@@ -17,7 +17,7 @@ class LocalFunctions {
 
         fun getTime(): String? {
             val date = Date()
-            val formatter = SimpleDateFormat("hh-mm-ss")
+            val formatter = SimpleDateFormat("hh:mm:ss")
             return formatter.format(date)
         }
 
@@ -43,7 +43,7 @@ class LocalFunctions {
 
         fun getDate(): String? {
             val date = Date()
-            val formatter = SimpleDateFormat("dd-MM-yyyy")
+            val formatter = SimpleDateFormat("dd:MM:yyyy")
             return formatter.format(date)
         }
 

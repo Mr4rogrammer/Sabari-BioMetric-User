@@ -23,7 +23,6 @@ class BaseActivity : AppCompatActivity() {
         setContentView(R.layout.activity_base)
 
 
-
         val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
         val viewPager = findViewById<ViewPager>(R.id.viewPager)
 

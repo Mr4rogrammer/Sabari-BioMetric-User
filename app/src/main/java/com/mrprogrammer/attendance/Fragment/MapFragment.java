@@ -62,6 +62,9 @@ import kotlin.jvm.functions.Function1;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback {
     SupportMapFragment supportMapFragment;
+
+    Double lat= 11.496213;
+    Double lon=  77.276925;
     private GoogleMap googleMapView = null;
     FusedLocationProviderClient mFusedLocationClient;
     Location location = null;
@@ -114,7 +117,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public void onClick(View v) {
                 if(Check()) {
-                    LatLng l = new LatLng(11.496213, 77.276925);
+                    LatLng l = new LatLng(lat, lon);
                     showMyLocation(l);
                 }
             }
@@ -152,16 +155,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 }
             };
         }
-        /*ObjectHolder.Companion.getInstance().getAttdanceModel().observe(getViewLifecycleOwner(), attdanceModel -> {
+        ObjectHolder.Companion.getInstance().getAttdanceModel().observe(getViewLifecycleOwner(), attdanceModel -> {
             if(attdanceModel != null && attdanceModel.getRadius() != null) {
                 updateCircleRadius(Integer.valueOf(attdanceModel.getRadius()));
             }
-        });*/
+        });
 
         Utils.Companion.getDataAndStoreLocally(attdanceModel -> {
             updateCircleRadius(Integer.valueOf(attdanceModel.getRadius()));
             return null;
         });
+        post();
         return root;
     }
 
@@ -369,12 +373,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         googleMapView = googleMap;
+        collagePoint();
         getLastLocation();
     }
 
     private void collagePoint() {
-        drawCircle(new LatLng(11.496213, 77.276925));
-        updateLocationForLocation(new LatLng(11.496213, 77.276925));
+        drawCircle(new LatLng(lat, lon));
+        updateLocationForLocation(new LatLng(lat, lon));
     }
     private HashMap<String, String> checkIamInside(Location location) {
         HashMap<String, String> map = new HashMap<>();

@@ -23,6 +23,7 @@ class LeaveListAdapter(private val context: Context, private val dataSet: List<L
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val roll: TextView = view.findViewById(R.id.rollNumber)
+        val type: TextView = view.findViewById(R.id.type)
         val email: TextView = view.findViewById(R.id.email)
         val status: TextView = view.findViewById(R.id.status)
         val from: TextView = view.findViewById(R.id.from)
@@ -38,7 +39,7 @@ class LeaveListAdapter(private val context: Context, private val dataSet: List<L
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-
+        holder.type.text = "Leave Type : ${dataSet[position].type}"
         holder.roll.text = "Roll : "+dataSet[position].roll
         holder.email.text ="Email : "+ dataSet[position].email
         holder.from.text = "From Date and Time : "+dataSet[position].fromdate + " "+ dataSet[position].fromtime
@@ -47,8 +48,6 @@ class LeaveListAdapter(private val context: Context, private val dataSet: List<L
         holder.status.text = "Status : " +if(!dataSet[position].status) "Pending or declined" else "Approved"
         holder.remakradmin.text = dataSet[position].adminremark
     }
-
-
 
     override fun getItemCount() = dataSet.size
 }

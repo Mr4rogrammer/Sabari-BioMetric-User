@@ -10,5 +10,6 @@ class LeaveDataMode {
     val roll:String  = ""
     val adminremark = ""
     val email:String  = ""
+    val type:String  = ""
     val status:Boolean = false
 }

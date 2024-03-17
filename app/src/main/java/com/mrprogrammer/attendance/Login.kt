@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.text.Html
 import android.view.LayoutInflater
 import android.widget.EditText
@@ -54,12 +55,6 @@ class Login : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val user = FirebaseAuth.getInstance().currentUser
-        if(user != null) {
-            startActivity(Intent(this, BaseActivity::class.java))
-            LocalFunctions.activityAnimation(this, true)
-            finish()
-        }
     }
 
     private fun createRequest() {
@@ -116,12 +111,27 @@ class Login : AppCompatActivity() {
                 reference = FirebaseDatabase.getInstance().getReference("Userdata")
                 if(clearedEmailString == null) return@addOnCompleteListener
                 try {
+                    val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
                     reference?.child(clearedEmailString)?.child("Username")?.setValue(user.displayName)
                     reference?.child(clearedEmailString)?.child("Email")?.setValue(user.email)
                     reference?.child(clearedEmailString)?.child("Imageurl")?.setValue(Objects.requireNonNull(user.photoUrl).toString())
-                    reference?.child(clearedEmailString)?.child("block")?.setValue("false")
-                    subscribeAndChangeActivity(user)
+                    reference = FirebaseDatabase.getInstance().getReference("UserData").child(clearedEmailString)
 
+                    reference?.addListenerForSingleValueEvent(object :ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            val data = snapshot.getValue(UserDataModel::class.java)
+                            if(data?.block == "null") {
+                                reference = FirebaseDatabase.getInstance().getReference("UserData")
+                                reference?.child(clearedEmailString)?.child("block")?.setValue(androidId)
+                            }
+                            subscribeAndChangeActivity(user)
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+
+                        }
+
+                    })
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -131,7 +141,6 @@ class Login : AppCompatActivity() {
             }
         }
     }
-
 
     private fun subscribeAndChangeActivity(user: FirebaseUser) {
         val email = CommonFunctions.firebaseClearString(user.email)
@@ -145,14 +154,13 @@ class Login : AppCompatActivity() {
     }
 
     private fun saveUserLocallyAndChangeActivity(user: FirebaseUser, changeActivity:Boolean = true) {
-
-
-        verifiyAndGetUser(user.email.toString()){
+        verifiyAndGetUser(user.email.toString()) {
           if(it == null) {
               FirebaseAuth.getInstance().signOut().apply {
                   MaterialAlertDialogBuilder(this@Login)
                       .setTitle(getString(R.string.app_name))
-                      .setPositiveButton("No User Mapped") { dialog, _ ->
+                      .setMessage("No User Mapped Contact Admin")
+                      .setPositiveButton("okey") { dialog, _ ->
                           finish()
                           dialog.dismiss()
                       }.show()
@@ -160,14 +168,28 @@ class Login : AppCompatActivity() {
               return@verifiyAndGetUser
           }
 
-            Utils.saveData(this, "roll", it.roll)
-            LocalSharedPreferences.saveUserLocally(this, user.displayName, user.email, user.photoUrl.toString())
-            root.login.setLoaderStatus(false)
-            if(changeActivity) {
-                startActivity(Intent(this, BaseActivity::class.java))
-                LocalFunctions.activityAnimation(this, true)
-                finish()
+            val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+            if(it.block == androidId) {
+                Utils.saveData(this, "roll", it.roll)
+                LocalSharedPreferences.saveUserLocally(this, user.displayName, user.email, user.photoUrl.toString())
+                root.login.setLoaderStatus(false)
+                if(changeActivity) {
+                    startActivity(Intent(this, BaseActivity::class.java))
+                    LocalFunctions.activityAnimation(this, true)
+                    finish()
+                }
+            } else {
+                FirebaseAuth.getInstance().signOut().apply {
+                    MaterialAlertDialogBuilder(this@Login)
+                        .setTitle(getString(R.string.app_name))
+                        .setMessage("Invalid Login Contact Admin")
+                        .setPositiveButton("okey") { dialog, _ ->
+                            finish()
+                            dialog.dismiss()
+                        }.show()
+                }
             }
+
         }
     }
 
@@ -175,14 +197,16 @@ class Login : AppCompatActivity() {
         val db = FirebaseDatabase.getInstance().getReference("UserData")
         val listner = object :ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                var status = false
                 snapshot.children.forEach{
                     val data = it.getValue(UserDataModel::class.java)
                     if(data?.mail == email) {
                         function.invoke(data)
+                        status = true
                         return@forEach
                     }
                 }
-                function.invoke(null)
+                if (!status) {function.invoke(null)}
                 return
             }
 

@@ -7,4 +7,6 @@ class AttdanceModel {
     var timeStart:String  = ""
     var username:String  = ""
     var password:String  = ""
+    var endDate:String  = ""
+    var startDate:String  = ""
 }
