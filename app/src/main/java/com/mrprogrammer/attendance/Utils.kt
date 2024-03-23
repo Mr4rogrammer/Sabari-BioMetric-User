@@ -45,6 +45,19 @@ class Utils {
             return dateFormat.format(calendar.time)
         }
 
+
+        fun getTrackDate(): String {
+            val calendar = Calendar.getInstance()
+            val dateFormat = SimpleDateFormat("MMddyyyy", Locale.getDefault())
+            return dateFormat.format(calendar.time)
+        }
+
+        fun getNewsDate(): String {
+            val calendar = Calendar.getInstance()
+            val dateFormat = SimpleDateFormat("dd_MM_yyy", Locale.getDefault())
+            return dateFormat.format(calendar.time)
+        }
+
          fun getCurrentTime(): String {
             val calendar = Calendar.getInstance()
             val timeFormat = SimpleDateFormat("hh:mm:ss", Locale.getDefault())

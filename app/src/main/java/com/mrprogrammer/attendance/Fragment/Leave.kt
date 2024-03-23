@@ -1,9 +1,9 @@
 package com.mrprogrammer.attendance.Fragment
 
-import android.app.Activity
 import android.app.AlertDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,22 +12,23 @@ import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.messaging.FirebaseMessaging
 import com.mrprogrammer.Utils.CommonFunctions.CommonFunctions
 import com.mrprogrammer.Utils.CommonFunctions.LocalSharedPreferences
 import com.mrprogrammer.Utils.Widgets.ProgressButton
 import com.mrprogrammer.attendance.Adapter.LeaveListAdapter
 import com.mrprogrammer.attendance.R
 import com.mrprogrammer.attendance.Respositoy.CommonRepo
+import com.mrprogrammer.attendance.SentNotification
 import com.mrprogrammer.attendance.Utils
 import com.mrprogrammer.attendance.Utils.Companion.firebaseClearString
 import com.mrprogrammer.attendance.Utils.Companion.getCurrentDate
@@ -160,6 +161,8 @@ class Leave : Fragment() {
                 db.child(clearMail).child(key).child("status").setValue(false).addOnCompleteListener {
                     ObjectHolder.getInstance()?.MrToast()?.success(requireActivity(),"Applied")
                 }
+
+                sentNotfication(email)
             }
 
             builder.setNegativeButton("Cancel") { dialog, _ ->
@@ -170,6 +173,10 @@ class Leave : Fragment() {
         }
     }
 
+
+    private fun sentNotfication(email: String?) {
+        SentNotification("token", getString(R.string.app_name), "$email applied Leave").execute()
+    }
 
     private fun dateCicker(textView: TextView) {
         val datePicker = MaterialDatePicker.Builder.datePicker()

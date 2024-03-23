@@ -3,13 +3,13 @@ package com.mrprogrammer.attendance.Fragment;
 // Fragment1.java
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.biometrics.BiometricPrompt;
-import android.location.Address;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
@@ -20,14 +20,17 @@ import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -45,7 +48,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.mrprogrammer.Utils.Interface.CompleteHandler;
+import com.mrprogrammer.Utils.Realm.RealmManager;
 import com.mrprogrammer.Utils.Widgets.ProgressButton;
+import com.mrprogrammer.attendance.DataUtils;
+import com.mrprogrammer.attendance.Model.AttdanceTrack;
 import com.mrprogrammer.attendance.PostAttdance;
 import com.mrprogrammer.attendance.R;
 import com.mrprogrammer.attendance.Utils;
@@ -57,10 +63,11 @@ import java.util.List;
 import java.util.Objects;
 
 import info.mrprogrammer.admin_bio.Model.AttdanceModel;
+import io.realm.Realm;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
-public class MapFragment extends Fragment implements OnMapReadyCallback {
+public class MapFragment extends Fragment implements OnMapReadyCallback , AdapterView.OnItemSelectedListener{
     SupportMapFragment supportMapFragment;
 
     Double lat= 11.496213;
@@ -89,6 +96,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private CancellationSignal cancellationSignal = null;
     private BiometricPrompt.AuthenticationCallback authenticationCallback;
 
+    private Spinner spinner;
+    private String spinnerStatus;
+
+    private void spinner() {
+        spinner = root.findViewById(R.id.spinner);
+        String[] items = {"Day", "Specific"};
+        ArrayAdapter<String> adapter = new ArrayAdapter(requireActivity(), android.R.layout.simple_spinner_item, items);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
+    }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         root =  inflater.inflate(R.layout.map_fragment, container, false);
@@ -99,6 +119,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             e.printStackTrace();
         }
 
+        spinner();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         button = root.findViewById(R.id.button);
         mylocation = root.findViewById(R.id.mylocation);
@@ -126,6 +147,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(checkTodayStatus()) {
+                    ObjectHolder.Companion.getInstance().MrToast().warning(requireActivity(),"Already done", Toast.LENGTH_LONG);
+                    return;
+                }
+
                 if(Check()) {
                     HashMap<String, String> map =  checkIamInside(location);
                     String status = map.get("status");
@@ -165,14 +191,62 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             updateCircleRadius(Integer.valueOf(attdanceModel.getRadius()));
             return null;
         });
-        post();
         return root;
     }
 
-    private void post() {
+    private void saveStatus() {
+        AttdanceTrack attdanceTrack = new AttdanceTrack(Long.valueOf(Utils.Companion.getTrackDate()));
+        RealmManager.getInstance().executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                realm.copyToRealmOrUpdate(attdanceTrack);
+            }
+        });
+    }
+
+
+    private boolean checkTodayStatus() {
+        Long today = Long.valueOf(Utils.Companion.getTrackDate());
+        AttdanceTrack attdanceTrack = RealmManager.getInstance().where(AttdanceTrack.class).equalTo("day", today).findFirst();
+        return attdanceTrack != null;
+    }
+
+    private void checkForUserName() {
+        View dialogView = LayoutInflater.from(requireActivity()).inflate(R.layout.dialog_login, null);
+        EditText usernameEditText = dialogView.findViewById(R.id.edit_text_username);
+        EditText passwordEditText = dialogView.findViewById(R.id.edit_text_password);
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+        builder.setView(dialogView)
+                .setTitle("Login")
+                .setPositiveButton("Login", (dialog, which) -> {
+                    String username = usernameEditText.getText().toString();
+                    String password = passwordEditText.getText().toString();
+
+                    DataUtils.Companion.getDataAndSpAttdanceModel(new Function1<AttdanceModel, Unit>() {
+                        @Override
+                        public Unit invoke(AttdanceModel attdanceModel) {
+                            if (attdanceModel.getUsername().equals(username) && attdanceModel.getPassword().equals(password)) {
+                                postAtta();
+                            } else {
+                                ObjectHolder.Companion.getInstance().MrToast().success(requireActivity(),"Invalid Login",Toast.LENGTH_LONG);
+                            }
+                            return null;
+                        }
+                    });
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    dialog.dismiss();
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void postAtta() {
         PostAttdance.Companion.post(requireContext(), new CompleteHandler() {
             @Override
             public void onSuccess(@NonNull Object o) {
+                saveStatus();
                 ObjectHolder.Companion.getInstance().MrToast().success(requireActivity(),"Success",Toast.LENGTH_LONG);
             }
 
@@ -181,6 +255,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 notifyUser(s);
             }
         });
+    }
+
+    private void post() {
+        String[] items = {"Day", "Specific"};
+        if (Objects.equals(spinnerStatus, items[0])) {
+            postAtta();
+        } else {
+            checkForUserName();
+        }
     }
 
     private void notifyUser(String message)
@@ -404,4 +487,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     }
 
 
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        String[] items = {"Day", "Specific"};
+        spinnerStatus = items[position];
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
 }

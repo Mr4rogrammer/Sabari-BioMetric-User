@@ -32,6 +32,20 @@ class DataUtils {
             })
         }
 
+
+        fun getDataAndSpAttdanceModel(function:(AttdanceModel?) -> Unit) {
+            val db = FirebaseDatabase.getInstance().getReference("attdances").child("spdata")
+            db.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                   function.invoke(snapshot.getValue(AttdanceModel::class.java))
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+            })
+        }
+
         private fun updateLeave(context: Context) {
             val listOfData = mutableListOf<LeaveDataMode>()
             val email = LocalSharedPreferences.getLocalSavedUser(context)?.get(1)
@@ -50,10 +64,12 @@ class DataUtils {
                         if (data != null && data.email == email)    {
                             listOfData.add(data)
                         }
-                        when(data?.type) {
-                            "LEAVE" -> leaveCount +=1
-                            "ON DUTY" -> odCount +=1
-                            "PERMISSION" -> permissionCount +=1
+                        if(data?.status == true) {
+                            when(data.type) {
+                                "LEAVE" -> leaveCount +=1
+                                "ON DUTY" -> odCount +=1
+                                "PERMISSION" -> permissionCount +=1
+                            }
                         }
                     }
 

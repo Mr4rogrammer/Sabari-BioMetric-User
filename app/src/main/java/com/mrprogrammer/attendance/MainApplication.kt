@@ -7,11 +7,22 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.mrprogrammer.mrshop.ObjectHolder.ObjectHolder
 import info.mrprogrammer.admin_bio.Model.AttdanceModel
+import io.realm.Realm
+import io.realm.RealmConfiguration
 
 class MainApplication:Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        Realm.init(applicationContext)
+        val DB = RealmConfiguration.Builder()
+            .name("LocalRealmDb.realm")
+            .schemaVersion(1)
+            .allowWritesOnUiThread(true)
+            .deleteRealmIfMigrationNeeded()
+            .build()
+        Realm.setDefaultConfiguration(DB)
         getDataAndStoreLocally()
         getDataAndSpStoreLocally()
     }

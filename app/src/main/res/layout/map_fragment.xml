@@ -1,54 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
 
-
-
     <fragment
-        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:id="@+id/mapView"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
 
-
-    <com.mrprogrammer.Utils.Widgets.ProgressButton
-        android:layout_alignParentBottom="true"
-        android:id="@+id/button"
-        app:text ="Mark My Attendance"
-        app:radius="5dp"
-        app:backgroundColor = "@color/green"
-        app:textColor="@color/white"
-        android:layout_marginBottom="10dp"
+    <Spinner
+        android:layout_marginTop="20dp"
+        android:background="#80D5C0"
+        android:id="@+id/spinner"
         android:layout_marginHorizontal="10dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="50dp" />
 
+    <com.mrprogrammer.Utils.Widgets.ProgressButton
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginBottom="10dp"
+        app:backgroundColor="@color/green"
+        app:radius="5dp"
+        app:text="Mark My Attendance"
+        app:textColor="@color/white" />
 
 
     <LinearLayout
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="75dp"
-        android:layout_marginEnd="10dp"
-        android:orientation="vertical"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="75dp"
+        android:orientation="vertical">
 
         <ImageView
             android:id="@+id/mylocation"
-            android:src="@drawable/mylocation"
             android:layout_width="35dp"
-            android:layout_height="35dp"/>
+            android:layout_height="35dp"
+            android:src="@drawable/mylocation" />
 
         <ImageView
             android:id="@+id/collage"
-            android:layout_marginTop="20dp"
-            android:src="@drawable/collage"
             android:layout_width="35dp"
-            android:layout_height="35dp"/>
+            android:layout_height="35dp"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/collage" />
     </LinearLayout>
 </RelativeLayout>
